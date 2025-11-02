@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>French Verb Conjugation Practice</title>
+<style>
+  :root{
+    --card-w: 380px;
+    --card-h: 220px;
+    --accent: #2b9cff;
+    --muted: #6b7280;
+  }
+  html,body{height:100%;margin:0;font-family:Inter,"Poppins",system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;}
+  body{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(120deg,#f0f3ff,#fffaf0);
+    padding:24px;
+  }
+
+  .app{text-align:center;width:min(100%,900px)}
+  header{display:flex;gap:12px;align-items:center;justify-content:center;margin-bottom:20px}
+  .flag{width:72px;height:48px;border-radius:6px;border:1px solid #ddd;overflow:hidden;display:flex}
+  .flag div{flex:1}
+  .blue{background:#0055A4}.white{background:#fff}.red{background:#EF4135}
+  h1{font-size:1.4rem;margin:0;color:#222;font-weight:600}
+  p.lead{margin:8px 0 18px;color:var(--muted)}
+
+  /* Card */
+  #card{
+    width:var(--card-w);height:var(--card-h);
+    border-radius:18px;
+    box-shadow:0 8px 30px rgba(20,30,60,.08);
+    background:linear-gradient(180deg,#ffffff,#fbfdff);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;user-select:none;padding:18px;margin-inline:auto;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  #card:active{transform:translateY(2px)}
+  .english-phrase{font-size:1.9rem;font-weight:700;color:#111}
+  .french-phrase{font-size:1.9rem;font-weight:700;color:#0b4a6f}
+  .root-verb{font-size:0.95rem;color:var(--muted);margin-top:6px}
+  .hint{font-size:0.85rem;color:var(--muted)}
+
+  /* controls */
+  .controls{display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap}
+  button{padding:10px 14px;border-radius:10px;border:0;cursor:pointer;font-weight:600}
+  .btn-next{background:#f3f4f6;color:#111}
+  .btn-random{background:var(--accent);color:#fff}
+  .small{font-size:0.85rem;color:var(--muted)}
+
+  footer{margin-top:14px;color:var(--muted);font-size:0.9rem}
+
+  @media(max-width:480px){
+    :root{--card-w:300px;--card-h:180px}
+    .english-phrase,.french-phrase{font-size:1.4rem}
+  }
+</style>
+</head>
+<body>
+<main class="app" role="application" aria-labelledby="title">
+  <header>
+    <div class="flag" aria-hidden="true"><div class="blue"></div><div class="white"></div><div class="red"></div></div>
+    <div>
+      <h1 id="title">French Verb Conjugation Practice</h1>
+      <p class="lead">Tap or press <kbd>Space</kbd> to reveal the conjugation and root verb.</p>
+    </div>
+  </header>
+
+  <section>
+    <div id="card" tabindex="0" role="button" aria-pressed="false" aria-live="polite"></div>
+
+    <div class="controls" aria-hidden="false">
+      <button id="nextBtn" class="btn-next" title="Next (or press 'n')">➡️ Next</button>
+      <button id="randomBtn" class="btn-random" title="Shuffle list">🔀 Shuffle</button>
+    </div>
+
+    <footer><div class="small">Click to reveal the French conjugation and verb root.</div></footer>
+  </section>
+</main>
+
+<script>
+const verbs=[
+  {root:'Être (to be)',english:'I am',french:'Je suis'},
+  {root:'Être (to be)',english:'You are (singular informal)',french:'Tu es'},
+  {root:'Être (to be)',english:'He / She is',french:'Il / Elle est'},
+  {root:'Être (to be)',english:'We are',french:'Nous sommes'},
+  {root:'Être (to be)',english:'You are (formal or plural)',french:'Vous êtes'},
+  {root:'Être (to be)',english:'They are',french:'Ils sont'},
+  {root:'Faire (to do / to make)',english:'I do / I make',french:'Je fais'},
+  {root:'Faire (to do / to make)',english:'You do',french:'Tu fais'},
+  {root:'Faire (to do / to make)',english:'He / She does',french:'Il fait'},
+  {root:'Faire (to do / to make)',english:'We do',french:'Nous faisons'},
+  {root:'Faire (to do / to make)',english:'You do (plural / formal)',french:'Vous faites'},
+  {root:'Faire (to do / to make)',english:'They do',french:'Ils font'},
+  {root:'Avoir (to have)',english:'I have',french:'J’ai'},
+  {root:'Avoir (to have)',english:'You have',french:'Tu as'},
+  {root:'Avoir (to have)',english:'He has',french:'Il a'},
+  {root:'Avoir (to have)',english:'We have',french:'Nous avons'},
+  {root:'Avoir (to have)',english:'You have (formal / plural)',french:'Vous avez'},
+  {root:'Avoir (to have)',english:'They have',french:'Ils ont'},
+  {root:'Vouloir (to want)',english:'I want',french:'Je veux'},
+  {root:'Vouloir (to want)',english:'You want',french:'Tu veux'},
+  {root:'Vouloir (to want)',english:'He / She wants',french:'Il / Elle veut'},
+  {root:'Vouloir (to want)',english:'We want',french:'Nous voulons'},
+  {root:'Vouloir (to want)',english:'You want (formal / plural)',french:'Vous voulez'},
+  {root:'Vouloir (to want)',english:'They want',french:'Ils veulent'},
+  {root:'Aller (to go)',english:'I go',french:'Je vais'},
+  {root:'Aller (to go)',english:'You go',french:'Tu vas'},
+  {root:'Aller (to go)',english:'He / She goes',french:'Il va'},
+  {root:'Aller (to go)',english:'We go',french:'Nous allons'},
+  {root:'Aller (to go)',english:'You go (formal / plural)',french:'Vous allez'},
+  {root:'Aller (to go)',english:'They go',french:'Ils vont'},
+  {root:'Jouer (to play)',english:'I play',french:'Je joue'},
+  {root:'Jouer (to play)',english:'You play',french:'Tu joues'},
+  {root:'Jouer (to play)',english:'He / She plays',french:'Il / Elle joue'},
+  {root:'Jouer (to play)',english:'We play',french:'Nous jouons'},
+  {root:'Jouer (to play)',english:'You play (formal / plural)',french:'Vous jouez'},
+  {root:'Jouer (to play)',english:'They play',french:'Ils jouent'}
+];
+
+let index=0,showingFrench=false;
+const card=document.getElementById('card');
+const nextBtn=document.getElementById('nextBtn');
+const randomBtn=document.getElementById('randomBtn');
+
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]))}
+
+function renderFront(item){
+  card.innerHTML=`<div>
+    <div class="english-phrase">${escapeHtml(item.english)}</div>
+  </div>`;
+  card.setAttribute('aria-pressed','false');
+}
+
+function renderBack(item){
+  card.innerHTML=`<div>
+    <div class="french-phrase">${escapeHtml(item.french)}</div>
+    <div class="root-verb">${escapeHtml(item.root)}</div>
+  </div>`;
+  card.setAttribute('aria-pressed','true');
+}
+
+function showIndex(i){
+  index=((i%verbs.length)+verbs.length)%verbs.length;
+  showingFrench=false;
+  renderFront(verbs[index]);
+}
+
+function flipCard(){
+  showingFrench=!showingFrench;
+  showingFrench?renderBack(verbs[index]):renderFront(verbs[index]);
+}
+
+function nextCard(){showIndex(index+1)}
+function randomize(){
+  for(let i=verbs.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [verbs[i],verbs[j]]=[verbs[j],verbs[i]];
+  }
+  showIndex(0);
+}
+
+card.addEventListener('click',flipCard);
+nextBtn.addEventListener('click',nextCard);
+randomBtn.addEventListener('click',randomize);
+card.addEventListener('keydown',e=>{
+  if(e.key===' '||e.key==='Enter'){e.preventDefault();flipCard()}
+  else if(e.key.toLowerCase()==='n'){e.preventDefault();nextCard()}
+  else if(e.key.toLowerCase()==='r'){e.preventDefault();randomize()}
+});
+showIndex(0);
+</script>
+</body>
+</html>
